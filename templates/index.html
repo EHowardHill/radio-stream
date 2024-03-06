@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Audio Streaming</title>
+</head>
+<body>
+    <h1>Audio Streaming</h1>
+    
+    <!-- Audio player to play the streamed audio -->
+    <audio controls></audio>
+
+    <script>
+        const audioPlayer = document.querySelector('audio');
+
+        // WebSocket connection
+        const ws = new WebSocket('ws://localhost:5000/audio');
+
+        // Event listener for WebSocket messages
+        ws.onmessage = function(event) {
+            console.log('Received message:', event.data);
+
+            // Decode and play the received audio data
+            const arrayBuffer = event.data;
+            const audioContext = new AudioContext();
+            audioContext.decodeAudioData(arrayBuffer, function(buffer) {
+                const source = audioContext.createBufferSource();
+                source.buffer = buffer;
+                source.connect(audioContext.destination);
+                source.start(0);
+            });
+
+            // Update the audio player source
+            audioPlayer.src = URL.createObjectURL(new Blob([arrayBuffer], { type: 'audio/wav' }));
+        };
+    </script>
+</body>
+</html>
